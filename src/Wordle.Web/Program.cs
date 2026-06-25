@@ -9,12 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
 var remoteWordList = new Uri("https://raw.githubusercontent.com/Taknok/French-Wordlist/master/francais.txt");
 var remoteSource = new HttpRemoteWordSource(http, remoteWordList);
-var words = await WordListLoader.LoadAsync(remoteSource, FrenchWords.FiveLetters);
+var wordList = await WordListLoader.LoadAsync(remoteSource, FrenchWords.FiveLetters);
 
-builder.Services.AddSingleton<IWordDictionary>(new InMemoryWordDictionary(words));
+builder.Services.AddSingleton<IWordDictionary>(new InMemoryWordDictionary(wordList.Words));
 builder.Services.AddSingleton<GameStore>();
 
 var app = builder.Build();
+
+app.Logger.LogInformation(
+    "Dictionnaire chargé : {Count} mots de 5 lettres ({Source}).",
+    wordList.Words.Count,
+    wordList.FromRemote ? "source distante" : "repli local");
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

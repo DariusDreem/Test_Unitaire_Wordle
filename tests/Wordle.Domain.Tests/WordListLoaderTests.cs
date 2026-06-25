@@ -12,10 +12,11 @@ public class WordListLoaderTests
         var remote = StubRemoteWordSource.Returning("LIVRE", "PORTE", "TROP", "ECOLE", "ÉCOLE", "HELLOO");
 
         // When the word list is loaded
-        var words = await WordListLoader.LoadAsync(remote, fallback: new[] { "TABLE" });
+        var result = await WordListLoader.LoadAsync(remote, fallback: new[] { "TABLE" });
 
-        // Then only the valid five-letter A–Z words are kept, in order
-        Assert.Equal(new[] { "LIVRE", "PORTE", "ECOLE" }, words.Select(word => word.Text));
+        // Then only the valid five-letter A–Z words are kept, in order, and they come from the remote
+        Assert.True(result.FromRemote);
+        Assert.Equal(new[] { "LIVRE", "PORTE", "ECOLE" }, result.Words.Select(word => word.Text));
     }
 
     [Fact]
@@ -25,10 +26,11 @@ public class WordListLoaderTests
         var remote = StubRemoteWordSource.ThatFails();
 
         // When the word list is loaded
-        var words = await WordListLoader.LoadAsync(remote, fallback: new[] { "LIVRE", "PORTE" });
+        var result = await WordListLoader.LoadAsync(remote, fallback: new[] { "LIVRE", "PORTE" });
 
         // Then the local fallback list is used instead
-        Assert.Equal(new[] { "LIVRE", "PORTE" }, words.Select(word => word.Text));
+        Assert.False(result.FromRemote);
+        Assert.Equal(new[] { "LIVRE", "PORTE" }, result.Words.Select(word => word.Text));
     }
 
     [Fact]
@@ -38,9 +40,10 @@ public class WordListLoaderTests
         var remote = StubRemoteWordSource.Returning("TROP", "AB", " ", "ÉLÈVE");
 
         // When the word list is loaded
-        var words = await WordListLoader.LoadAsync(remote, fallback: new[] { "TABLE" });
+        var result = await WordListLoader.LoadAsync(remote, fallback: new[] { "TABLE" });
 
         // Then the fallback is used
-        Assert.Equal(new[] { "TABLE" }, words.Select(word => word.Text));
+        Assert.False(result.FromRemote);
+        Assert.Equal(new[] { "TABLE" }, result.Words.Select(word => word.Text));
     }
 }

@@ -2,6 +2,9 @@ using Wordle.Domain;
 
 namespace Wordle.Infrastructure;
 
+/// <summary>The valid words, plus whether they came from the remote source or the local fallback.</summary>
+public sealed record WordListResult(IReadOnlyList<Word> Words, bool FromRemote);
+
 /// <summary>
 /// Builds the list of playable <see cref="Word"/>s once, at startup:
 /// it tries the remote source first and, on any failure or empty result,
@@ -10,18 +13,18 @@ namespace Wordle.Infrastructure;
 /// </summary>
 public static class WordListLoader
 {
-    public static async Task<IReadOnlyList<Word>> LoadAsync(
+    public static async Task<WordListResult> LoadAsync(
         IRemoteWordSource remoteSource,
         IEnumerable<string> fallback,
         CancellationToken cancellationToken = default)
     {
-        var fromRemote = await TryFetchAsync(remoteSource, cancellationToken);
-        var words = ToValidWords(fromRemote);
+        var raw = await TryFetchAsync(remoteSource, cancellationToken);
+        var words = ToValidWords(raw);
 
-        if (words.Count == 0)
-            words = ToValidWords(fallback);
+        if (words.Count > 0)
+            return new WordListResult(words, FromRemote: true);
 
-        return words;
+        return new WordListResult(ToValidWords(fallback), FromRemote: false);
     }
 
     private static async Task<IReadOnlyList<string>> TryFetchAsync(
