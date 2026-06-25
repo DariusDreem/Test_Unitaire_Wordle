@@ -1,0 +1,30 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveryml
+coverage*.json
+coverage*.xml
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Assignment reference PDFs (kept locally, not part of the delivered solution)
+enonce_wordle.pdf
+grille_evaluation.pdf
